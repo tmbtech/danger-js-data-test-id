@@ -1,8 +1,8 @@
 export default function App() {
   return (
     <main>
-      <h1 data-testid="greeting">Hello Danger</h1>
-      <p>Baseline with an initial test id.</p>
+      <h1 data-testid="greeting-updated">Hello Danger</h1>
+      <p>Changed test id to trigger Danger.</p>
     </main>
   );
 }
