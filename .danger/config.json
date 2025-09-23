@@ -1,0 +1,18 @@
+{
+  "attributeNames": ["data-testid", "data-test-id"],
+  "includeGlobs": ["src/**/*.{tsx,jsx,ts,js,html}"],
+  "excludeGlobs": [
+    "node_modules/**",
+    "dist/**",
+    "build/**",
+    "**/__tests__/**",
+    "**/__mocks__/**",
+    "**/__fixtures__/**",
+    "**/__snapshots__/**",
+    "**/*.spec.*",
+    "**/*.test.*",
+    "**/*.stories.*",
+    "storybook-static/**"
+  ],
+  "tagTeam": "@tmbtech"
+}
