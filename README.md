@@ -54,6 +54,15 @@ This repository demonstrates using Danger.js to guard against breaking UI test s
 - Removing `data-testid` entirely will:
   - Add a PR comment tagging `@tmbtech` and listing: `data-testid removed: "old"`.
 
+### Demo PRs
+- Change demo: https://github.com/tmbtech/danger-js-poc/pull/2
+- Removal demo: https://github.com/tmbtech/danger-js-poc/pull/3
+
+### Optional screenshots
+- You can add screenshots under `docs/images/` and link them here:
+  - Comment example: `docs/images/danger-comment.png`
+  - Checks panel example: `docs/images/danger-status.png`
+
 ## Troubleshooting
 - No comment/status on a PR from a fork: expected due to restricted tokens. Test from a branch in this repo.
 - No findings but you expected one: verify the file path matches `includeGlobs`, and that the attribute names are included.
