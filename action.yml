@@ -1,0 +1,56 @@
+name: "Warn on TestID Attribute Changes (Danger.js)"
+description: "Composite GitHub Action that uses Danger.js to warn on changes/removals of data test-id attributes in pull requests."
+author: "Robbie dela Victoria"
+branding:
+  color: "yellow"
+  icon: "alert-triangle"
+
+inputs:
+  github_token:
+    description: "GitHub token used by Danger to comment"
+    required: false
+    default: ${{ github.token }}
+  attribute_names:
+    description: "Comma-separated attribute names to track"
+    required: false
+    default: "data-testid,data-test-id"
+  include_globs:
+    description: "Comma-separated glob patterns to include"
+    required: false
+    default: "src/**/*.{tsx,jsx,ts,js,html}"
+  exclude_globs:
+    description: "Comma-separated glob patterns to exclude"
+    required: false
+    default: "node_modules/**,dist/**,build/**,**/__tests__/**,**/__mocks__/**,**/__fixtures__/**,**/__snapshots__/**,**/*.spec.*,**/*.test.*,**/*.stories.*,storybook-static/**"
+  tag_team:
+    description: "Team or handle to notify (e.g., @org/qa) when drift is detected"
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: yarn
+        cache-dependency-path: ${{ github.action_path }}/yarn.lock
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: |
+        yarn install --frozen-lockfile || yarn install
+
+    - name: Run Danger
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        DANGER_GITHUB_API_TOKEN: ${{ inputs.github_token }}
+        DANGER_TESTID_ATTRS: ${{ inputs.attribute_names }}
+        DANGER_INCLUDE_GLOBS: ${{ inputs.include_globs }}
+        DANGER_EXCLUDE_GLOBS: ${{ inputs.exclude_globs }}
+        DANGER_TAG_TEAM: ${{ inputs.tag_team }}
+      run: |
+        yarn danger ci --dangerfile "$GITHUB_ACTION_PATH/Dangerfile.ts"

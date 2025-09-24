@@ -39,13 +39,15 @@ const defaults: Required<Config> = {
 };
 
 const cfgFromFile = loadConfig();
+const envCsv = (v?: string) => (v ? v.split(",").map((s) => s.trim()).filter(Boolean) : undefined);
 const cfg: Required<Config> = {
-  attributeNames: (process.env.DANGER_TESTID_ATTRS
-    ? process.env.DANGER_TESTID_ATTRS.split(",").map((s) => s.trim()).filter(Boolean)
-    : (cfgFromFile.attributeNames || defaults.attributeNames)) as string[],
-  includeGlobs: cfgFromFile.includeGlobs || defaults.includeGlobs,
-  excludeGlobs: cfgFromFile.excludeGlobs || defaults.excludeGlobs,
-  tagTeam: cfgFromFile.tagTeam || defaults.tagTeam
+  attributeNames: (envCsv(process.env.DANGER_TESTID_ATTRS)
+    || (cfgFromFile.attributeNames as string[] | undefined)
+    || defaults.attributeNames) as string[],
+  includeGlobs: envCsv(process.env.DANGER_INCLUDE_GLOBS) || cfgFromFile.includeGlobs || defaults.includeGlobs,
+  excludeGlobs: envCsv(process.env.DANGER_EXCLUDE_GLOBS) || cfgFromFile.excludeGlobs || defaults.excludeGlobs,
+  // tagTeam has no default in the action; fall back to file config, otherwise empty
+  tagTeam: (process.env.DANGER_TAG_TEAM && process.env.DANGER_TAG_TEAM.trim()) || cfgFromFile.tagTeam || ""
 };
 
 function extractAttrValueFromLine(attr: string, line: string): { present: boolean; value: string | null } {
@@ -71,7 +73,8 @@ function extractAttrValueFromLine(attr: string, line: string): { present: boolea
 
 async function run() {
   const modified = danger.git.modified_files || [];
-  const candidates = micromatch(modified, cfg.includeGlobs, { ignore: cfg.excludeGlobs });
+  const changed = Array.from(new Set([...(danger.git.modified_files || []), ...(danger.git.created_files || [])]));
+  const candidates = micromatch(changed, cfg.includeGlobs, { ignore: cfg.excludeGlobs });
 
   const report: Array<{
     file: string;
@@ -135,7 +138,8 @@ async function run() {
   }
 
   const lines: string[] = [];
-  lines.push(`Heads up ${cfg.tagTeam} — data test-id attribute changes detected in this PR.`);
+  const mention = cfg.tagTeam ? `${cfg.tagTeam} ` : "";
+  lines.push(`Heads up ${mention}— data test-id attribute changes detected in this PR.`);
   lines.push("");
   for (const entry of report) {
     lines.push(`• ${entry.file}`);
