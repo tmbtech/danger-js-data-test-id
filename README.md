@@ -31,6 +31,51 @@ This repository demonstrates using Danger.js to guard against breaking UI test s
   - `contents: read`, `pull-requests: write`, and `statuses: write`.
 - For pull requests from forks, GitHub may restrict token permissions; comments/statuses might not post. For internal branches, everything works as expected.
 
+## Using this as a reusable GitHub Action
+- This repository now exposes a composite action (action.yml) that runs Danger.js to warn on changes/removals of data test-id attributes.
+- Recommended workflow usage:
+
+```yaml path=null start=null
+name: TestID drift warnings
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  testid-drift:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Warn on test-id changes
+        uses: <owner>/<repo>@v1
+        with:
+          tag_team: "@your-org/qa-team" # strongly recommended for mentions
+          # Optional overrides:
+          # github_token: ${{ github.token }}
+          # attribute_names: "data-testid,data-test-id"
+          # include_globs: "src/**/*.{tsx,jsx,ts,js,html}"
+          # exclude_globs: "node_modules/**,dist/**,build/**,**/__tests__/**,**/__mocks__/**,**/__fixtures__/**,**/__snapshots__/**,**/*.spec.*,**/*.test.*,**/*.stories.*,storybook-static/**"
+```
+
+Inputs
+- github_token: GitHub token for posting comments (default: GitHub Actions token)
+- attribute_names: Comma-separated attribute names to track (default: data-testid,data-test-id)
+- include_globs: Comma-separated include patterns (default: src/**/*.{tsx,jsx,ts,js,html})
+- exclude_globs: Comma-separated exclude patterns (default mirrors .danger/config.json)
+- tag_team: Team or handle to mention (no default)
+
+Notes
+- Warnings are non-blocking. The job will succeed even if issues are found.
+- The action respects inputs first; otherwise it falls back to .danger/config.json.
+
 ## Running locally
 - Prerequisites: Node 20+, yarn.
 - Install dependencies once:
