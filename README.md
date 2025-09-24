@@ -67,3 +67,6 @@ This repository demonstrates using Danger.js to guard against breaking UI test s
 - No comment/status on a PR from a fork: expected due to restricted tokens. Test from a branch in this repo.
 - No findings but you expected one: verify the file path matches `includeGlobs`, and that the attribute names are included.
 - Need different attributes per-repo/team: adjust `.danger/config.json` and commit.
+
+## License
+This project is licensed under the MIT License — see the [LICENSE](./LICENSE) file for details.
